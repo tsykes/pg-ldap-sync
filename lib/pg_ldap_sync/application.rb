@@ -223,9 +223,14 @@ class Application
     (0...res.num_tuples).map{|t| (0...res.num_fields).map{|i| res.getvalue(t, i) } }
   end
 
+  #  changed by tsykes to ignore error if user already exists
   def create_pg_role(role)
-    pg_conf = @config[role.type==:user ? :pg_users : :pg_groups]
-    pg_exec_modify "CREATE ROLE \"#{role.name}\" #{pg_conf[:create_options]}"
+    begin 
+      pg_conf = @config[role.type==:user ? :pg_users : :pg_groups]
+      pg_exec_modify "CREATE ROLE \"#{role.name}\" #{pg_conf[:create_options]}"
+    rescue 
+      log.info{ "can't create pg-user but that's ok: #{role.name}"}
+    end 
   end
 
   def drop_pg_role(role)
